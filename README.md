@@ -1,6 +1,6 @@
 ---
 services: virtual-machines
-platforms: java
+platforms: python
 author: lmazuel
 ---
 
