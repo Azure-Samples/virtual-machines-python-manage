@@ -79,6 +79,33 @@ or [the portal](http://azure.microsoft.com/documentation/articles/resource-group
     ```
     python example.py
     ```
+
+## Notes
+
+### Cleanup
+
+If any steps in the example fail, it will offer to delete the resource group
+that it created to clean up after itself.
+
+If you decide not to delete the resource group, the example will subsequently fail
+due to trying to create duplicate resources. You must delete the resource group
+in order to allow it to succeed (but you can do so simply by running it again
+and choosing to allow deletion at the prompt).
+
+### Retrieving a VM's OS disk
+
+You may be tempted to try to retrieve a VM's OS disk by using
+`virtual_machine.storage_profile.os_disk`.
+In some cases, this may do what you want,
+but be aware that it gives you an `OSDisk` object.
+In order to update the OS Disk's size, as `example.py` does,
+you need not an `OSDisk` object but a `Disk` object.
+`example.py` gets the `Disk` object with the following:
+
+```python
+os_disk_name = virtual_machine.storage_profile.os_disk.name
+os_disk = compute_client.disks.get(GROUP_NAME, os_disk_name)
+```
     
 ## More information
 
