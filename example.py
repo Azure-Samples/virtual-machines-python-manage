@@ -15,7 +15,7 @@ from haikunator import Haikunator
 haikunator = Haikunator()
 
 # Azure Datacenter
-LOCATION = 'westus2'
+LOCATION = 'westus'
 
 # Resource Group
 GROUP_NAME = 'azure-sample-group-virtual-machines'
