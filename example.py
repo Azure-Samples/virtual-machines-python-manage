@@ -1,15 +1,21 @@
 import os
+import traceback
+
 from azure.common.credentials import ServicePrincipalCredentials
 from azure.mgmt.resource import ResourceManagementClient
-from azure.mgmt.storage import StorageManagementClient
 from azure.mgmt.network import NetworkManagementClient
 from azure.mgmt.compute import ComputeManagementClient
+from azure.mgmt.compute.models import DiskCreateOption
+
+from msrestazure.azure_exceptions import CloudError
+
 from haikunator import Haikunator
+
 
 haikunator = Haikunator()
 
 # Azure Datacenter
-LOCATION = 'westus'
+LOCATION = 'westus2'
 
 # Resource Group
 GROUP_NAME = 'azure-sample-group-virtual-machines'
@@ -43,6 +49,7 @@ VM_REFERENCE = {
     }
 }
 
+
 # Manage resources and resource groups - create, update and delete a resource group,
 # deploy a solution into a resource group, export an ARM template. Create, read, update
 # and delete a resource
@@ -59,9 +66,7 @@ def run_example():
     #
     # Create all clients with an Application (service principal) token provider
     #
-    subscription_id = os.environ.get(
-        'AZURE_SUBSCRIPTION_ID',
-        '11111111-1111-1111-1111-111111111111') # your Azure Subscription Id
+    subscription_id = os.environ['AZURE_SUBSCRIPTION_ID']
     credentials = ServicePrincipalCredentials(
         client_id=os.environ['AZURE_CLIENT_ID'],
         secret=os.environ['AZURE_CLIENT_SECRET'],
@@ -69,166 +74,170 @@ def run_example():
     )
     resource_client = ResourceManagementClient(credentials, subscription_id)
     compute_client = ComputeManagementClient(credentials, subscription_id)
-    storage_client = StorageManagementClient(credentials, subscription_id)
     network_client = NetworkManagementClient(credentials, subscription_id)
 
-    ###########
-    # Prepare #
-    ###########
+    try:
+        ###########
+        # Prepare #
+        ###########
 
-    # Create Resource group
-    print('\nCreate Resource Group')
-    resource_client.resource_groups.create_or_update(GROUP_NAME, {'location':LOCATION})
+        # Create Resource group
+        print('\nCreate Resource Group')
+        resource_client.resource_groups.create_or_update(GROUP_NAME, {'location': LOCATION})
 
-    # Create a storage account
-    print('\nCreate a storage account')
-    storage_async_operation = storage_client.storage_accounts.create(
-        GROUP_NAME,
-        STORAGE_ACCOUNT_NAME,
-        {
-            'sku': {'name': 'standard_lrs'},
-            'kind': 'storage',
-            'location': LOCATION
-        }
-    )
-    storage_async_operation.wait()
+        # Create a NIC
+        nic = create_nic(network_client)
 
-    # Create a NIC
-    nic = create_nic(network_client)
+        #############
+        # VM Sample #
+        #############
 
-    #############
-    # VM Sample #
-    #############
+        # Create Linux VM
+        print('\nCreating Linux Virtual Machine')
+        vm_parameters = create_vm_parameters(nic.id, VM_REFERENCE['linux'])
+        async_vm_creation = compute_client.virtual_machines.create_or_update(
+            GROUP_NAME, VM_NAME, vm_parameters)
+        async_vm_creation.wait()
 
-    # Create Linux VM
-    print('\nCreating Linux Virtual Machine')
-    vm_parameters = create_vm_parameters(nic.id, VM_REFERENCE['linux'])
-    async_vm_creation = compute_client.virtual_machines.create_or_update(
-        GROUP_NAME, VM_NAME, vm_parameters)
-    async_vm_creation.wait()
-
-    # Tag the VM
-    print('\nTag Virtual Machine')
-    async_vm_update = compute_client.virtual_machines.create_or_update(
-        GROUP_NAME,
-        VM_NAME,
-        {
-            'location': LOCATION,
-            'tags': {
-                'who-rocks': 'python',
-                'where': 'on azure'
+        # Tag the VM
+        print('\nTag Virtual Machine')
+        async_vm_update = compute_client.virtual_machines.create_or_update(
+            GROUP_NAME,
+            VM_NAME,
+            {
+                'location': LOCATION,
+                'tags': {
+                    'who-rocks': 'python',
+                    'where': 'on azure'
+                }
             }
-        }
-    )
-    async_vm_update.wait()
+        )
+        async_vm_update.wait()
 
-    # Attach data disk
-    print('\nAttach Data Disk')
-    async_vm_update = compute_client.virtual_machines.create_or_update(
-        GROUP_NAME,
-        VM_NAME,
-        {
-            'location': LOCATION,
-            'storage_profile': {
-                'data_disks': [{
-                    'name': 'mydatadisk1',
-                    'disk_size_gb': 1,
-                    'lun': 0,
-                    'vhd': {
-                        'uri' : "http://{}.blob.core.windows.net/vhds/mydatadisk1.vhd".format(
-                            STORAGE_ACCOUNT_NAME)
-                    },
-                    'create_option': 'Empty'
-                }]
+        # Create managed data disk
+        print('\nCreate (empty) managed Data Disk')
+        async_disk_creation = compute_client.disks.create_or_update(
+            GROUP_NAME,
+            'mydatadisk1',
+            {
+                'location': LOCATION,
+                'disk_size_gb': 1,
+                'creation_data': {
+                    'create_option': DiskCreateOption.empty
+                }
             }
-        }
-    )
-    async_vm_update.wait()
+        )
+        data_disk = async_disk_creation.result()
 
-    # Get one the virtual machine by name
-    print('\nGet Virtual Machine by Name')
-    virtual_machine = compute_client.virtual_machines.get(
-        GROUP_NAME,
-        VM_NAME
-    )
+        # Get the virtual machine by name
+        print('\nGet Virtual Machine by Name')
+        virtual_machine = compute_client.virtual_machines.get(
+            GROUP_NAME,
+            VM_NAME
+        )
 
-    # Detach data disk
-    print('\nDetach Data Disk')
-    data_disks = virtual_machine.storage_profile.data_disks
-    data_disks[:] = [disk for disk in data_disks if disk.name != 'mydatadisk1']
-    async_vm_update = compute_client.virtual_machines.create_or_update(
-        GROUP_NAME,
-        VM_NAME,
-        virtual_machine
-    )
-    virtual_machine = async_vm_update.result()
+        # Attach data disk
+        print('\nAttach Data Disk')
+        virtual_machine.storage_profile.data_disks.append({
+            'lun': 12,
+            'name': 'mydatadisk1',
+            'create_option': DiskCreateOption.attach,
+            'managed_disk': {
+                'id': data_disk.id
+            }
+        })
+        async_disk_attach = compute_client.virtual_machines.create_or_update(
+            GROUP_NAME,
+            virtual_machine.name,
+            virtual_machine
+        )
+        async_disk_attach.wait()
 
-    # Deallocating the VM (resize prepare)
-    print('\nDeallocating the VM (resize prepare)')
-    async_vm_deallocate = compute_client.virtual_machines.deallocate(GROUP_NAME, VM_NAME)
-    async_vm_deallocate.wait()
+        # Detach data disk
+        print('\nDetach Data Disk')
+        data_disks = virtual_machine.storage_profile.data_disks
+        data_disks[:] = [disk for disk in data_disks if disk.name != 'mydatadisk1']
+        async_vm_update = compute_client.virtual_machines.create_or_update(
+            GROUP_NAME,
+            VM_NAME,
+            virtual_machine
+        )
+        virtual_machine = async_vm_update.result()
 
-    # Update OS disk size by 10Gb
-    print('\nUpdate OS disk size')
-    # Server is not returning the OS Disk size (None), possible bug in server
-    if not virtual_machine.storage_profile.os_disk.disk_size_gb:
-        print("\tServer is not returning the OS disk size, possible bug in the server?")
-        print("\tAssuming that the OS disk size is 256 GB")
-        virtual_machine.storage_profile.os_disk.disk_size_gb = 256
+        # Deallocating the VM (resize prepare)
+        print('\nDeallocating the VM (resize prepare)')
+        async_vm_deallocate = compute_client.virtual_machines.deallocate(GROUP_NAME, VM_NAME)
+        async_vm_deallocate.wait()
 
-    virtual_machine.storage_profile.os_disk.disk_size_gb += 10
-    async_vm_update = compute_client.virtual_machines.create_or_update(
-        GROUP_NAME,
-        VM_NAME,
-        virtual_machine
-    )
-    virtual_machine = async_vm_update.result()
+        # Increase OS disk size by 10 GB
+        print('\nUpdate OS disk size')
+        os_disk_name = virtual_machine.storage_profile.os_disk.name
+        os_disk = compute_client.disks.get(GROUP_NAME, os_disk_name)
+        if not os_disk.disk_size_gb:
+            print("\tServer is not returning the OS disk size, possible bug in the server?")
+            print("\tAssuming that the OS disk size is 30 GB")
+            os_disk.disk_size_gb = 30
 
-    # Start the VM
-    print('\nStart VM')
-    async_vm_start = compute_client.virtual_machines.start(GROUP_NAME, VM_NAME)
-    async_vm_start.wait()
+        os_disk.disk_size_gb += 10
 
-    # Restart the VM
-    print('\nRestart VM')
-    async_vm_restart = compute_client.virtual_machines.restart(GROUP_NAME, VM_NAME)
-    async_vm_restart.wait()
+        async_disk_update = compute_client.disks.create_or_update(
+            GROUP_NAME,
+            os_disk.name,
+            os_disk
+        )
+        async_disk_update.wait()
 
-    # Stop the VM
-    print('\nStop VM')
-    async_vm_stop = compute_client.virtual_machines.power_off(GROUP_NAME, VM_NAME)
-    async_vm_stop.wait()
+        # Start the VM
+        print('\nStart VM')
+        async_vm_start = compute_client.virtual_machines.start(GROUP_NAME, VM_NAME)
+        async_vm_start.wait()
 
-    # List VMs in subscription
-    print('\nList VMs in subscription')
-    for vm in compute_client.virtual_machines.list_all():
-        print("\tVM: {}".format(vm.name))
+        # Restart the VM
+        print('\nRestart VM')
+        async_vm_restart = compute_client.virtual_machines.restart(GROUP_NAME, VM_NAME)
+        async_vm_restart.wait()
 
-    # List VM in resource group
-    print('\nList VMs in resource group')
-    for vm in compute_client.virtual_machines.list(GROUP_NAME):
-        print("\tVM: {}".format(vm.name))
+        # Stop the VM
+        print('\nStop VM')
+        async_vm_stop = compute_client.virtual_machines.power_off(GROUP_NAME, VM_NAME)
+        async_vm_stop.wait()
 
-    # Delete VM
-    print('\nDelete VM')
-    async_vm_delete = compute_client.virtual_machines.delete(GROUP_NAME, VM_NAME)
-    async_vm_delete.wait()
+        # List VMs in subscription
+        print('\nList VMs in subscription')
+        for vm in compute_client.virtual_machines.list_all():
+            print("\tVM: {}".format(vm.name))
 
-    # Create Windows VM
-    print('\nCreating Windows Virtual Machine')
-    # Recycling NIC of previous VM
-    vm_parameters = create_vm_parameters(nic.id, VM_REFERENCE['windows'])
-    async_vm_creation = compute_client.virtual_machines.create_or_update(
-        GROUP_NAME, VM_NAME, vm_parameters)
-    async_vm_creation.wait()
+        # List VM in resource group
+        print('\nList VMs in resource group')
+        for vm in compute_client.virtual_machines.list(GROUP_NAME):
+            print("\tVM: {}".format(vm.name))
 
-    input("Press enter to delete this Resource Group.")
+        # Delete VM
+        print('\nDelete VM')
+        async_vm_delete = compute_client.virtual_machines.delete(GROUP_NAME, VM_NAME)
+        async_vm_delete.wait()
 
-    # Delete Resource group and everything in it
-    print('\nDelete Resource Group')
-    delete_async_operation = resource_client.resource_groups.delete(GROUP_NAME)
-    delete_async_operation.wait()
-    print("\nDeleted: {}".format(GROUP_NAME))
+        # Create Windows VM
+        print('\nCreating Windows Virtual Machine')
+        # Recycling NIC of previous VM
+        vm_parameters = create_vm_parameters(nic.id, VM_REFERENCE['windows'])
+        async_vm_creation = compute_client.virtual_machines.create_or_update(
+            GROUP_NAME, VM_NAME, vm_parameters)
+        async_vm_creation.wait()
+    except CloudError:
+        print('A VM operation failed:', traceback.format_exc(), sep='\n')
+    else:
+        print('All example operations completed successfully!')
+    finally:
+        keep_group = input("Press enter to delete the Resource Group (or type 'n' to keep it): ")
+
+        if not keep_group:
+            # Delete Resource group and everything in it
+            print('\nDelete Resource Group')
+            delete_async_operation = resource_client.resource_groups.delete(GROUP_NAME)
+            delete_async_operation.wait()
+            print("\nDeleted: {}".format(GROUP_NAME))
+
 
 def create_nic(network_client):
     """Create a Network Interface for a VM.
@@ -274,6 +283,7 @@ def create_nic(network_client):
     )
     return async_nic_creation.result()
 
+
 def create_vm_parameters(nic_id, vm_reference):
     """Create the VM parameters structure.
     """
@@ -285,7 +295,7 @@ def create_vm_parameters(nic_id, vm_reference):
             'admin_password': PASSWORD
         },
         'hardware_profile': {
-            'vm_size': 'Standard_DS1'
+            'vm_size': 'Standard_DS1_v2'
         },
         'storage_profile': {
             'image_reference': {
@@ -293,15 +303,6 @@ def create_vm_parameters(nic_id, vm_reference):
                 'offer': vm_reference['offer'],
                 'sku': vm_reference['sku'],
                 'version': vm_reference['version']
-            },
-            'os_disk': {
-                'name': OS_DISK_NAME,
-                'caching': 'None',
-                'create_option': 'fromImage',
-                'vhd': {
-                    'uri': 'https://{}.blob.core.windows.net/vhds/{}.vhd'.format(
-                        STORAGE_ACCOUNT_NAME, VM_NAME+haikunator.haikunate())
-                }
             },
         },
         'network_profile': {
