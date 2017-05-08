@@ -1,3 +1,12 @@
+"""Create and manage virtual machines.
+
+This script expects that the following environment vars are set:
+
+AZURE_TENANT_ID: your Azure Active Directory tenant id or domain
+AZURE_CLIENT_ID: your Azure Active Directory Application Client ID
+AZURE_CLIENT_SECRET: your Azure Active Directory Application Secret
+AZURE_SUBSCRIPTION_ID: your Azure Subscription Id
+"""
 import os
 import traceback
 
@@ -50,19 +59,8 @@ VM_REFERENCE = {
 }
 
 
-# Manage resources and resource groups - create, update and delete a resource group,
-# deploy a solution into a resource group, export an ARM template. Create, read, update
-# and delete a resource
-#
-# This script expects that the following environment vars are set:
-#
-# AZURE_TENANT_ID: with your Azure Active Directory tenant id or domain
-# AZURE_CLIENT_ID: with your Azure Active Directory Application Client ID
-# AZURE_CLIENT_SECRET: with your Azure Active Directory Application Secret
-# AZURE_SUBSCRIPTION_ID: with your Azure Subscription Id
-#
 def run_example():
-    """Resource Group management example."""
+    """Virtual Machine management example."""
     #
     # Create all clients with an Application (service principal) token provider
     #
