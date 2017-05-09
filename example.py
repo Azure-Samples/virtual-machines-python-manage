@@ -162,8 +162,8 @@ def run_example():
         )
         virtual_machine = async_vm_update.result()
 
-        # Deallocating the VM (resize prepare)
-        print('\nDeallocating the VM (resize prepare)')
+        # Deallocating the VM (in preparation for a disk resize)
+        print('\nDeallocating the VM (to prepare for a disk resize)')
         async_vm_deallocate = compute_client.virtual_machines.deallocate(GROUP_NAME, VM_NAME)
         async_vm_deallocate.wait()
 
