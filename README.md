@@ -26,7 +26,7 @@ The code provided shows how to do the following:
 - Delete a virtual machine
 
 To see the code to perform these operations,
-check out [example.py](example.py).
+check out the `run_example()` function in [example.py](example.py).
 Each operation is clearly labeled with a comment and a print function.
 The examples are not necessarily in the order shown in the above list.
 
