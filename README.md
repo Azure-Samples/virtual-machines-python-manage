@@ -8,19 +8,27 @@ author: lmazuel
 These samples demonstrate how to perform common management tasks
 with Microsoft Azure Virtual Machines
 using the Azure SDK for Python.
-The code examples provided show how to do the following:
+The code provided shows how to do the following:
 
-- Create a virtual machine
-- Start a virtual machine
-- Stop a virtual machine
-- Restart a virtual machine
-- Update a virtual machine
+- Create virtual machines:
+    - Create a Linux virtual machine
+    - Create a Windows virtual machine
+- Update a virtual machine:
 	- Expand a drive
 	- Tag a virtual machine
 	- Attach data disks
 	- Detach data disks
+- Operate a virtual machine:
+    - Start a virtual machine
+    - Stop a virtual machine
+    - Restart a virtual machine
 - List virtual machines
 - Delete a virtual machine
+
+To see the code to perform these operations,
+check out [example.py](example.py).
+Each operation is clearly labeled with a comment and a print function.
+The examples are not necessarily in the order shown in the above list.
 
 
 ## Running this sample
