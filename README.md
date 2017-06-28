@@ -90,16 +90,6 @@ or [the portal](http://azure.microsoft.com/documentation/articles/resource-group
 
 ## Notes
 
-### Cleanup
-
-If any steps in the example fail, it will offer to delete the resource group
-that it created to clean up after itself.
-
-If you decide not to delete the resource group, the example will subsequently fail
-due to trying to create duplicate resources. You must delete the resource group
-in order to allow it to succeed (but you can do so simply by running it again
-and choosing to allow deletion at the prompt).
-
 ### Retrieving a VM's OS disk
 
 You may be tempted to try to retrieve a VM's OS disk by using
