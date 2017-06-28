@@ -227,9 +227,6 @@ def run_example():
     else:
         print('All example operations completed successfully!')
     finally:
-        keep_group = input("Press enter to delete the Resource Group (or type 'n' to keep it): ")
-
-        if not keep_group:
             # Delete Resource group and everything in it
             print('\nDelete Resource Group')
             delete_async_operation = resource_client.resource_groups.delete(GROUP_NAME)
