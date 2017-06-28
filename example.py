@@ -79,15 +79,15 @@ def run_example():
     compute_client = ComputeManagementClient(credentials, subscription_id)
     network_client = NetworkManagementClient(credentials, subscription_id)
 
+    ###########
+    # Prepare #
+    ###########
+
+    # Create Resource group
+    print('\nCreate Resource Group')
+    resource_client.resource_groups.create_or_update(GROUP_NAME, {'location': LOCATION})
+
     try:
-        ###########
-        # Prepare #
-        ###########
-
-        # Create Resource group
-        print('\nCreate Resource Group')
-        resource_client.resource_groups.create_or_update(GROUP_NAME, {'location': LOCATION})
-
         # Create a NIC
         nic = create_nic(network_client)
 
@@ -232,11 +232,11 @@ def run_example():
     else:
         print('All example operations completed successfully!')
     finally:
-            # Delete Resource group and everything in it
-            print('\nDelete Resource Group')
-            delete_async_operation = resource_client.resource_groups.delete(GROUP_NAME)
-            delete_async_operation.wait()
-            print("\nDeleted: {}".format(GROUP_NAME))
+        # Delete Resource group and everything in it
+        print('\nDelete Resource Group')
+        delete_async_operation = resource_client.resource_groups.delete(GROUP_NAME)
+        delete_async_operation.wait()
+        print("\nDeleted: {}".format(GROUP_NAME))
 
 
 def create_nic(network_client):
