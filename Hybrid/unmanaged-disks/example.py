@@ -120,7 +120,7 @@ def run_example():
 
     # Create Linux VM
     print('\nCreating Linux Virtual Machine')
-    vm_parameters = create_vm_parameters(nic.id, VM_REFERENCE['linux'], mystack_cloud)
+    vm_parameters = create_vm_parameters(nic.id, VM_REFERENCE['linux'], storage_endpoint_suffix)
     async_vm_creation = compute_client.virtual_machines.create_or_update(
         GROUP_NAME, VM_NAME, vm_parameters)
     async_vm_creation.wait()
@@ -153,7 +153,7 @@ def run_example():
                     'disk_size_gb': 1,
                     'lun': 0,
                     'vhd': {
-                        'uri' : "http://{}.blob.{}/vhds/mydatadisk1.vhd".format(
+                        'uri' : "https://{}.blob.{}/vhds/mydatadisk1.vhd".format(
                             STORAGE_ACCOUNT_NAME, storage_endpoint_suffix)
                     },
                     'create_option': 'Empty'
@@ -235,7 +235,7 @@ def run_example():
     # Create Windows VM
     print('\nCreating Windows Virtual Machine')
     # Recycling NIC of previous VM
-    vm_parameters = create_vm_parameters(nic.id, VM_REFERENCE['windows'])
+    vm_parameters = create_vm_parameters(nic.id, VM_REFERENCE['windows'], storage_endpoint_suffix)
     async_vm_creation = compute_client.virtual_machines.create_or_update(
         GROUP_NAME, VM_NAME, vm_parameters)
     async_vm_creation.wait()
@@ -292,7 +292,7 @@ def create_nic(network_client):
     )
     return async_nic_creation.result()
 
-def create_vm_parameters(nic_id, vm_reference):
+def create_vm_parameters(nic_id, vm_reference, storage_endpoint_suffix):
     """Create the VM parameters structure.
     """
 

@@ -78,7 +78,7 @@ The examples are not necessarily in the order shown in the above list.
 8. Run the sample.
 
     ```
-    python example.py
+    python unmanaged-disks\example.py
     ```
 
 ## Notes
