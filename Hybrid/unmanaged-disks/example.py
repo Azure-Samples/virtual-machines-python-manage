@@ -68,6 +68,10 @@ def run_example():
     #
     mystack_cloud = get_cloud_from_metadata_endpoint(os.environ['ARM_ENDPOINT'])
 
+    # Set Storage Endpoint suffix
+    arm_url = mystack_cloud.endpoints.resource_manager
+    storage_endpoint_suffix = arm_url.replace(arm_url.split(".")[0], "").strip('./')
+
     subscription_id = os.environ.get(
         'AZURE_SUBSCRIPTION_ID',
         '11111111-1111-1111-1111-111111111111') # your Azure Subscription Id
@@ -136,6 +140,29 @@ def run_example():
     )
     async_vm_update.wait()
 
+    # Attach data disk
+    print('\nAttach Data Disk')
+    async_vm_update = compute_client.virtual_machines.create_or_update(
+        GROUP_NAME,
+        VM_NAME,
+        {
+            'location': LOCATION,
+            'storage_profile': {
+                'data_disks': [{
+                    'name': 'mydatadisk1',
+                    'disk_size_gb': 1,
+                    'lun': 0,
+                    'vhd': {
+                        'uri' : "http://{}.blob.{}/vhds/mydatadisk1.vhd".format(
+                            STORAGE_ACCOUNT_NAME, storage_endpoint_suffix)
+                    },
+                    'create_option': 'Empty'
+                }]
+            }
+        }
+    )
+    async_vm_update.wait()
+
     # Get the virtual machine by name
     print('\nGet Virtual Machine by Name')
     virtual_machine = compute_client.virtual_machines.get(
@@ -143,6 +170,17 @@ def run_example():
         VM_NAME
     )
 
+    # Detach data disk
+    print('\nDetach Data Disk')
+    data_disks = virtual_machine.storage_profile.data_disks
+    data_disks[:] = [disk for disk in data_disks if disk.name != 'mydatadisk1']
+    async_vm_update = compute_client.virtual_machines.create_or_update(
+        GROUP_NAME,
+        VM_NAME,
+        virtual_machine
+    )
+    virtual_machine = async_vm_update.result()
+    
     # Deallocating the VM (resize prepare)
     print('\nDeallocating the VM (resize prepare)')
     async_vm_deallocate = compute_client.virtual_machines.deallocate(GROUP_NAME, VM_NAME)
@@ -197,7 +235,7 @@ def run_example():
     # Create Windows VM
     print('\nCreating Windows Virtual Machine')
     # Recycling NIC of previous VM
-    vm_parameters = create_vm_parameters(nic.id, VM_REFERENCE['windows'], mystack_cloud)
+    vm_parameters = create_vm_parameters(nic.id, VM_REFERENCE['windows'])
     async_vm_creation = compute_client.virtual_machines.create_or_update(
         GROUP_NAME, VM_NAME, vm_parameters)
     async_vm_creation.wait()
@@ -254,11 +292,9 @@ def create_nic(network_client):
     )
     return async_nic_creation.result()
 
-def create_vm_parameters(nic_id, vm_reference, mystack_cloud):
+def create_vm_parameters(nic_id, vm_reference):
     """Create the VM parameters structure.
     """
-    arm_url = mystack_cloud.endpoints.resource_manager
-    storage_endpoint_suffix = arm_url.replace(arm_url.split(".")[0], "").strip('./')
 
     return {
         'location': LOCATION,

@@ -16,6 +16,8 @@ The code provided shows how to do the following:
 - Update a virtual machine:
 	- Expand a drive
 	- Tag a virtual machine
+	- Attach data disks
+	- Detach data disks
 - Operate a virtual machine:
     - Start a virtual machine
     - Stop a virtual machine
@@ -70,7 +72,10 @@ The examples are not necessarily in the order shown in the above list.
     export ARM_ENDPOINT={your AzureStack Resource Manager Endpoint}
     ```
 
-7.  Run the sample.
+7.  Note that in order to run this sample, Ubuntu 16.04-LTS and WindowsServer 2012-R2-Datacenter images must be present in AzureStack market place. These can be either [downloaded from Azure](https://docs.microsoft.com/en-us/azure/azure-stack/azure-stack-download-azure-marketplace-item) or [added to Platform Image Repository](https://docs.microsoft.com/en-us/azure/azure-stack/azure-stack-add-vm-image).
+
+
+8. Run the sample.
 
     ```
     python example.py
