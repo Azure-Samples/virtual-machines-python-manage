@@ -228,7 +228,7 @@ def run_example():
             GROUP_NAME, VM_NAME, vm_parameters)
         async_vm_creation.wait()
     except CloudError:
-        print('A VM operation failed:', traceback.format_exc(), sep='\n')
+        print('A VM operation failed:\n{}'.format(traceback.format_exc()))
     else:
         print('All example operations completed successfully!')
     finally:
