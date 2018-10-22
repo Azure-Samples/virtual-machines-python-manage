@@ -51,9 +51,9 @@ VM_REFERENCE = {
         'version': 'latest'
     },
     'windows': {
-        'publisher': 'MicrosoftWindowsServerEssentials',
-        'offer': 'WindowsServerEssentials',
-        'sku': 'WindowsServerEssentials',
+        'publisher': 'MicrosoftWindowsServer',
+        'offer': 'WindowsServer',
+        'sku': '2016-Datacenter',
         'version': 'latest'
     }
 }
