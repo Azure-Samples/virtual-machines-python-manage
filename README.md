@@ -111,7 +111,7 @@ Here are some helpful links:
 
 - [Azure Python Development Center](https://azure.microsoft.com/develop/python/)
 - [Azure Virtual Machines documentation](https://azure.microsoft.com/services/virtual-machines/)
-- [Learning Path for Virtual Machines](https://azure.microsoft.com/documentation/learning-paths/virtual-machines/)
+- [Learning Path for Virtual Machines](https://docs.microsoft.com/learn/modules/intro-to-azure-virtual-machines/index)
 
 If you don't have a Microsoft Azure subscription you can get a FREE trial account [here](http://go.microsoft.com/fwlink/?LinkId=330212).
 
