@@ -1,5 +1,0 @@
-azure-mgmt-resource~=2.0.0rc1
-azure-mgmt-network~=2.0.0rc2
-azure-mgmt-compute~=4.0.0rc2
-azure-mgmt-storage~=2.0.0rc3
-haikunator
