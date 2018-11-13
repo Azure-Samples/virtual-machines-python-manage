@@ -34,17 +34,19 @@ The examples are not necessarily in the order shown in the above list.
 ## Running this sample
 1.  If you don't already have it, [install Python](https://www.python.org/downloads/).
 
-    This sample (and the SDK) is compatible with Python 2.7, 3.3, 3.4, 3.5 and 3.6.
+    This sample (and the SDK) is compatible with Python 2.7, 3.4, 3.5, 3.6 and 3.7.
 
-2.  We recommend that you use a [virtual environment](https://docs.python.org/3/tutorial/venv.html)
-    to run this example, but it's not mandatory.
-    Install and initialize the virtual environment with:
+2.  General recommendation for Python development is to use a Virtual Environment.
+    For more information, see https://docs.python.org/3/tutorial/venv.html
+
+    Install and initialize the virtual environment with the "venv" module on Python 3 (you must install [virtualenv](https://pypi.python.org/pypi/virtualenv) for Python 2.7):
 
     ```
-    pip install virtualenv
-    virtualenv mytestenv
+    python -m venv mytestenv # Might be "python3" or "py -3.6" depending on your Python installation
     cd mytestenv
-    source bin/activate
+    source bin/activate      # Linux shell (Bash, ZSH, etc.) only
+    ./scripts/activate       # PowerShell only
+    ./scripts/activate.bat   # Windows CMD only
     ```
 
 3.  Clone the repository.
@@ -73,7 +75,7 @@ or [the portal](http://azure.microsoft.com/documentation/articles/resource-group
     describes where to find them (besides the subscription ID,
     which is in the "Overview" section of the "Subscriptions" blade.)
 
-6.  Fill in and export these environment variables into your current shell. 
+6.  Fill in and export these environment variables into your current shell.
 
     ```
     export AZURE_TENANT_ID={your tenant id}
@@ -104,7 +106,7 @@ you need not an `OSDisk` object but a `Disk` object.
 os_disk_name = virtual_machine.storage_profile.os_disk.name
 os_disk = compute_client.disks.get(GROUP_NAME, os_disk_name)
 ```
-    
+
 ## More information
 
 Here are some helpful links:
