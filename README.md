@@ -44,9 +44,8 @@ The examples are not necessarily in the order shown in the above list.
     ```
     python -m venv mytestenv # Might be "python3" or "py -3.6" depending on your Python installation
     cd mytestenv
-    source bin/activate      # Linux shell (Bash, ZSH, etc.) only
-    ./scripts/activate       # PowerShell only
-    ./scripts/activate.bat   # Windows CMD only
+    source bin/activate      # Linux shells (Bash, ZSH, etc.)
+    scripts\activate         # Windows shells (PowerShell, CMD)
     ```
 
 3.  Clone the repository.
