@@ -62,7 +62,7 @@ class VirtualMachineExampleTest(ReplayableTest):
             run_example()
         else:
             with patch('example.get_credentials', VirtualMachineExampleTest.fake_credentials), \
-                 patch('example.STORAGE_ACCOUNT_NAME', DUMMY_STORAGE_NAME):
+                    patch('example.STORAGE_ACCOUNT_NAME', DUMMY_STORAGE_NAME):
                 run_example()
 
 

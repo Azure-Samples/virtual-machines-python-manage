@@ -54,6 +54,8 @@ VM_REFERENCE = {
 # AZURE_CLIENT_SECRET: with your Azure Active Directory Application Secret
 # AZURE_SUBSCRIPTION_ID: with your Azure Subscription Id
 #
+
+
 def run_example():
     """Resource Group management example."""
     #
@@ -61,7 +63,7 @@ def run_example():
     #
     subscription_id = os.environ.get(
         'AZURE_SUBSCRIPTION_ID',
-        '11111111-1111-1111-1111-111111111111') # your Azure Subscription Id
+        '11111111-1111-1111-1111-111111111111')  # your Azure Subscription Id
     credentials = ServicePrincipalCredentials(
         client_id=os.environ['AZURE_CLIENT_ID'],
         secret=os.environ['AZURE_CLIENT_SECRET'],
@@ -78,7 +80,8 @@ def run_example():
 
     # Create Resource group
     print('\nCreate Resource Group')
-    resource_client.resource_groups.create_or_update(GROUP_NAME, {'location':LOCATION})
+    resource_client.resource_groups.create_or_update(
+        GROUP_NAME, {'location': LOCATION})
 
     # Create a storage account
     print('\nCreate a storage account')
@@ -135,7 +138,7 @@ def run_example():
                     'disk_size_gb': 1,
                     'lun': 0,
                     'vhd': {
-                        'uri' : "http://{}.blob.core.windows.net/vhds/mydatadisk1.vhd".format(
+                        'uri': "http://{}.blob.core.windows.net/vhds/mydatadisk1.vhd".format(
                             STORAGE_ACCOUNT_NAME)
                     },
                     'create_option': 'Empty'
@@ -165,7 +168,8 @@ def run_example():
 
     # Deallocating the VM (resize prepare)
     print('\nDeallocating the VM (resize prepare)')
-    async_vm_deallocate = compute_client.virtual_machines.deallocate(GROUP_NAME, VM_NAME)
+    async_vm_deallocate = compute_client.virtual_machines.deallocate(
+        GROUP_NAME, VM_NAME)
     async_vm_deallocate.wait()
 
     # Update OS disk size by 10Gb
@@ -191,12 +195,14 @@ def run_example():
 
     # Restart the VM
     print('\nRestart VM')
-    async_vm_restart = compute_client.virtual_machines.restart(GROUP_NAME, VM_NAME)
+    async_vm_restart = compute_client.virtual_machines.restart(
+        GROUP_NAME, VM_NAME)
     async_vm_restart.wait()
 
     # Stop the VM
     print('\nStop VM')
-    async_vm_stop = compute_client.virtual_machines.power_off(GROUP_NAME, VM_NAME)
+    async_vm_stop = compute_client.virtual_machines.power_off(
+        GROUP_NAME, VM_NAME)
     async_vm_stop.wait()
 
     # List VMs in subscription
@@ -211,7 +217,8 @@ def run_example():
 
     # Delete VM
     print('\nDelete VM')
-    async_vm_delete = compute_client.virtual_machines.delete(GROUP_NAME, VM_NAME)
+    async_vm_delete = compute_client.virtual_machines.delete(
+        GROUP_NAME, VM_NAME)
     async_vm_delete.wait()
 
     # Create Windows VM
@@ -229,6 +236,7 @@ def run_example():
     delete_async_operation = resource_client.resource_groups.delete(GROUP_NAME)
     delete_async_operation.wait()
     print("\nDeleted: {}".format(GROUP_NAME))
+
 
 def create_nic(network_client):
     """Create a Network Interface for a VM.
@@ -273,6 +281,7 @@ def create_nic(network_client):
         }
     )
     return async_nic_creation.result()
+
 
 def create_vm_parameters(nic_id, vm_reference):
     """Create the VM parameters structure.

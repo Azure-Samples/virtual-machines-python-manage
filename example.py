@@ -85,7 +85,8 @@ def run_example():
 
     # Create Resource group
     print('\nCreate Resource Group')
-    resource_client.resource_groups.create_or_update(GROUP_NAME, {'location': LOCATION})
+    resource_client.resource_groups.create_or_update(
+        GROUP_NAME, {'location': LOCATION})
 
     try:
         # Create a NIC
@@ -159,7 +160,8 @@ def run_example():
         # Detach data disk
         print('\nDetach Data Disk')
         data_disks = virtual_machine.storage_profile.data_disks
-        data_disks[:] = [disk for disk in data_disks if disk.name != 'mydatadisk1']
+        data_disks[:] = [
+            disk for disk in data_disks if disk.name != 'mydatadisk1']
         async_vm_update = compute_client.virtual_machines.create_or_update(
             GROUP_NAME,
             VM_NAME,
@@ -169,7 +171,8 @@ def run_example():
 
         # Deallocating the VM (in preparation for a disk resize)
         print('\nDeallocating the VM (to prepare for a disk resize)')
-        async_vm_deallocate = compute_client.virtual_machines.deallocate(GROUP_NAME, VM_NAME)
+        async_vm_deallocate = compute_client.virtual_machines.deallocate(
+            GROUP_NAME, VM_NAME)
         async_vm_deallocate.wait()
 
         # Increase OS disk size by 10 GB
@@ -177,7 +180,8 @@ def run_example():
         os_disk_name = virtual_machine.storage_profile.os_disk.name
         os_disk = compute_client.disks.get(GROUP_NAME, os_disk_name)
         if not os_disk.disk_size_gb:
-            print("\tServer is not returning the OS disk size, possible bug in the server?")
+            print(
+                "\tServer is not returning the OS disk size, possible bug in the server?")
             print("\tAssuming that the OS disk size is 30 GB")
             os_disk.disk_size_gb = 30
 
@@ -192,17 +196,20 @@ def run_example():
 
         # Start the VM
         print('\nStart VM')
-        async_vm_start = compute_client.virtual_machines.start(GROUP_NAME, VM_NAME)
+        async_vm_start = compute_client.virtual_machines.start(
+            GROUP_NAME, VM_NAME)
         async_vm_start.wait()
 
         # Restart the VM
         print('\nRestart VM')
-        async_vm_restart = compute_client.virtual_machines.restart(GROUP_NAME, VM_NAME)
+        async_vm_restart = compute_client.virtual_machines.restart(
+            GROUP_NAME, VM_NAME)
         async_vm_restart.wait()
 
         # Stop the VM
         print('\nStop VM')
-        async_vm_stop = compute_client.virtual_machines.power_off(GROUP_NAME, VM_NAME)
+        async_vm_stop = compute_client.virtual_machines.power_off(
+            GROUP_NAME, VM_NAME)
         async_vm_stop.wait()
 
         # List VMs in subscription
@@ -217,7 +224,8 @@ def run_example():
 
         # Delete VM
         print('\nDelete VM')
-        async_vm_delete = compute_client.virtual_machines.delete(GROUP_NAME, VM_NAME)
+        async_vm_delete = compute_client.virtual_machines.delete(
+            GROUP_NAME, VM_NAME)
         async_vm_delete.wait()
 
         # Create Windows VM
@@ -234,7 +242,8 @@ def run_example():
     finally:
         # Delete Resource group and everything in it
         print('\nDelete Resource Group')
-        delete_async_operation = resource_client.resource_groups.delete(GROUP_NAME)
+        delete_async_operation = resource_client.resource_groups.delete(
+            GROUP_NAME)
         delete_async_operation.wait()
         print("\nDeleted: {}".format(GROUP_NAME))
 
