@@ -1,7 +1,11 @@
 ---
-services: virtual-machines
-platforms: python
-author: lmazuel
+page_type: sample
+description: "How to perform common management tasks with Microsoft Azure Virtual Machines using the Azure SDK for Python."
+languages:
+- python
+products:
+- azure
+- azure-virtual-machines
 ---
 
 # Azure Virtual Machines Management Samples - Python
